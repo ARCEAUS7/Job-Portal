@@ -206,9 +206,8 @@ git remote add origin <your-github-repo-url>
 git push -u origin main
 ```
 
-*(`.env` is excluded via `.gitignore` — never commit real secrets.)*
+*
 
 ---
 
-## Next Stage
-AI Integration to Backend.
+
