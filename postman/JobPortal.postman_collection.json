@@ -1,0 +1,337 @@
+{
+  "info": {
+    "name": "Job Portal Backend API",
+    "description": "Collection for testing the Job Portal Backend API: registration/login, job seeker, employer and admin flows, plus negative/security test cases.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api" },
+    { "key": "jobId", "value": "" },
+    { "key": "applicationId", "value": "" },
+    { "key": "userId", "value": "" },
+    { "key": "jobseekerEmail", "value": "seeker1@example.com" },
+    { "key": "employerEmail", "value": "employer1@example.com" },
+    { "key": "adminEmail", "value": "admin@jobportal.com" },
+    { "key": "password", "value": "Password123!" },
+    { "key": "adminPassword", "value": "ChangeMe123!" }
+  ],
+  "item": [
+    {
+      "name": "1. Auth",
+      "item": [
+        {
+          "name": "Register Job Seeker",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jane Seeker\",\n  \"email\": \"{{jobseekerEmail}}\",\n  \"password\": \"{{password}}\",\n  \"role\": \"jobseeker\",\n  \"skills\": [\"JavaScript\", \"Node.js\"],\n  \"experience\": \"1 year backend development\",\n  \"education\": [{ \"degree\": \"B.Tech\", \"institution\": \"ABC University\", \"yearOfCompletion\": 2023 }]\n}"
+            }
+          }
+        },
+        {
+          "name": "Register Employer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Acme HR\",\n  \"email\": \"{{employerEmail}}\",\n  \"password\": \"{{password}}\",\n  \"role\": \"employer\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Register - Duplicate Email (should fail)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jane Seeker\",\n  \"email\": \"{{jobseekerEmail}}\",\n  \"password\": \"{{password}}\",\n  \"role\": \"jobseeker\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Register - Invalid Input (short password)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Bad Input\",\n  \"email\": \"bad@example.com\",\n  \"password\": \"123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login Job Seeker",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{jobseekerEmail}}\",\n  \"password\": \"{{password}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login Employer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{employerEmail}}\",\n  \"password\": \"{{password}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login Admin",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login - Wrong Password (should fail)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{jobseekerEmail}}\",\n  \"password\": \"WrongPassword!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get My Profile (requires login cookie)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/auth/me" }
+        },
+        {
+          "name": "Get My Profile - No Auth (should fail 401)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/auth/me",
+            "header": [{ "key": "Cookie", "value": "token=invalidtoken" }]
+          }
+        },
+        {
+          "name": "Update My Profile",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/me",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"skills\": [\"JavaScript\", \"Node.js\", \"MongoDB\"],\n  \"experience\": \"1.5 years backend development\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": { "method": "POST", "url": "{{baseUrl}}/auth/logout" }
+        }
+      ]
+    },
+    {
+      "name": "2. Job Seeker Flows",
+      "item": [
+        {
+          "name": "View All Jobs (Public)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/jobs" }
+        },
+        {
+          "name": "View Single Job By ID",
+          "request": { "method": "GET", "url": "{{baseUrl}}/jobs/{{jobId}}" }
+        },
+        {
+          "name": "Apply For a Job (login as jobseeker first)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/applications/{{jobId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"coverLetter\": \"I would love to join your team!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Apply Again - Duplicate (should fail 400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/applications/{{jobId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"coverLetter\": \"Applying again\"\n}"
+            }
+          }
+        },
+        {
+          "name": "View My Applications",
+          "request": { "method": "GET", "url": "{{baseUrl}}/applications/my-applications" }
+        },
+        {
+          "name": "View My Application By ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/applications/my-applications/{{applicationId}}"
+          }
+        },
+        {
+          "name": "Job Seeker Tries to Create Job (should fail 403)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/jobs",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Should Fail\",\n  \"companyName\": \"N/A\",\n  \"description\": \"N/A\",\n  \"location\": \"N/A\",\n  \"employmentType\": \"full-time\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Employer Flows",
+      "item": [
+        {
+          "name": "Create Job Posting (login as employer first)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/jobs",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Backend Developer\",\n  \"companyName\": \"Acme Corp\",\n  \"description\": \"Build and maintain REST APIs.\",\n  \"location\": \"Remote\",\n  \"employmentType\": \"full-time\",\n  \"salaryRange\": { \"min\": 60000, \"max\": 90000 },\n  \"requiredSkills\": [\"Node.js\", \"MongoDB\"],\n  \"experienceRequired\": \"1-3 years\",\n  \"applicationDeadline\": \"2026-12-31\"\n}"
+            }
+          }
+        },
+        {
+          "name": "View My Job Postings",
+          "request": { "method": "GET", "url": "{{baseUrl}}/jobs/my-jobs" }
+        },
+        {
+          "name": "Update My Job Posting",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/jobs/{{jobId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"salaryRange\": { \"min\": 65000, \"max\": 95000 }\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Another Employer's Job (should fail 403)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/jobs/{{jobId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Hijacked Title\"\n}"
+            }
+          }
+        },
+        {
+          "name": "View Applications For a Job",
+          "request": { "method": "GET", "url": "{{baseUrl}}/applications/job/{{jobId}}" }
+        },
+        {
+          "name": "Update Application Status",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/applications/{{applicationId}}/status",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"shortlisted\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete My Job Posting",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/jobs/{{jobId}}" }
+        }
+      ]
+    },
+    {
+      "name": "4. Admin Flows",
+      "item": [
+        {
+          "name": "View All Users (login as admin first)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/admin/users" }
+        },
+        {
+          "name": "View User By ID",
+          "request": { "method": "GET", "url": "{{baseUrl}}/admin/users/{{userId}}" }
+        },
+        {
+          "name": "Suspend a User",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/admin/users/{{userId}}/status",
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"suspended\"\n}" }
+          }
+        },
+        {
+          "name": "View All Jobs (Admin)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/admin/jobs" }
+        },
+        {
+          "name": "Delete Inappropriate Job",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/admin/jobs/{{jobId}}" }
+        },
+        {
+          "name": "Delete User",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/admin/users/{{userId}}" }
+        },
+        {
+          "name": "Non-Admin Tries Admin Route (should fail 403)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/admin/users" }
+        }
+      ]
+    },
+    {
+      "name": "5. Security / Negative Tests",
+      "item": [
+        {
+          "name": "Access Protected Route Without Token (should fail 401)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/auth/me" }
+        },
+        {
+          "name": "Access Protected Route With Invalid Token (should fail 401)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/auth/me",
+            "header": [{ "key": "Cookie", "value": "token=this.is.invalid" }]
+          }
+        },
+        {
+          "name": "View Nonexistent Job (should fail 404)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/jobs/64f000000000000000000000" }
+        },
+        {
+          "name": "Logout Then Access Profile (should fail 401)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/auth/me" }
+        }
+      ]
+    }
+  ]
+}
